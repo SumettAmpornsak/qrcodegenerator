@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+    <link rel="icon" href="https://banner2.cleanpng.com/20190216/hgq/kisspng-computer-icons-image-scanner-scalable-vector-graph-ic-1713907141674.webp" type="image/x-icon" />
+    <title>QR Code Generator</title>
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* ทำให้ body มีความสูงเต็ม */
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #qrcode {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            animation: borderColor 2s infinite; /* เพิ่ม animation */
+        }
+        @keyframes borderColor {
+            0% {
+                border: 5px solid #007bff; /* สีน้ำเงิน */
+            }
+            50% {
+                border: 5px solid #ff69b4; /* สีชมพู */
+            }
+            100% {
+                border: 5px solid #8c00ff; /* กลับไปสีน้ำเงิน */
+            }
+        }
+        input {
+            width: 100%;
+        }
+        footer {
+            margin-top: auto;
+            padding: 20px 0;
+            background-color: #000000; /* สีพื้นหลังสำหรับ Footer */
+            color: #ffffff; /* ฟอนต์สีขาว */
+        }
+        /* Dark Mode Styles */
+        .dark-mode {
+            background-color: #343a40; /* สีพื้นหลังสำหรับ Dark Mode */
+            color: #ffffff; /* ฟอนต์สีขาว */
+        }
+        .dark-mode #qrcode {
+            background-color: #495057; /* สีพื้นหลังสำหรับ QR Code ใน Dark Mode */
+            border-color: #007bff; /* สีกรอบสำหรับ QR Code ใน Dark Mode */
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <h1 class="text-center my-4">ระบบสร้าง QR Code</h1>
+        <p id="randomText" class="text-center my-2"></p> <!-- เปลี่ยน ID สำหรับข้อความที่พิมพ์ -->
+        <div class="text-center mb-3">
+            <button id="toggleMode" class="btn btn-secondary">🌙</button> <!-- ใช้สัญลักษณ์สำหรับ Dark Mode -->
+        </div>
+        <div class="input-group mb-3">
+            <input type="text" id="inputText" class="form-control" placeholder="ใส่ข้อความหรือ URL ที่นี่">
+            <div class="input-group-append">
+                <button id="generateBtn" class="btn btn-primary">สร้าง QR Code</button>
+            </div>
+        </div>
+        <div id="qrcode"></div>
+    </div>
+
+    <footer class="text-center">
+        <p>© 2024 Sumett Ampornsak  All rights reserved</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://rawgit.com/davidshimjs/qrcodejs/master/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const originalText = "Develop By Sumett Ampornsak";
+
+            // ฟังก์ชันสำหรับพิมพ์ข้อความ
+            function typeText(text) {
+                let index = 0; // เริ่มจาก 0
+                const speed = 50; // ความเร็วในการพิมพ์
+                const interval = setInterval(() => {
+                    if (index < text.length) {
+                        $('#randomText').text(text.substring(0, index + 1)); // แสดงข้อความทีละตัว
+                        index++;
+                    } else {
+                        clearInterval(interval); // หยุดเมื่อพิมพ์เสร็จ
+                        setTimeout(() => {
+                            // หลังจากนั้นพิมพ์ข้อความสุ่ม
+                            randomTyping();
+                        }, 2000); // รอ 2 วินาทีก่อนเริ่มพิมพ์สุ่ม
+                    }
+                }, speed);
+            }
+
+            // ฟังก์ชันสำหรับพิมพ์ข้อความสุ่ม
+            function randomTyping() {
+                const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"; // ตัวอักษรที่ใช้สุ่ม
+                let randomText = "...";
+                let randomIndex = 0;
+                const typingSpeed = 100; // ความเร็วในการพิมพ์ข้อความสุ่ม
+                const interval = setInterval(() => {    
+                    if (randomIndex < 10) {
+                        randomText += characters.charAt(Math.floor(Math.random() * characters.length));
+                        $('#randomText').text(randomText); // แสดงข้อความสุ่ม
+                        randomIndex++;
+                    } else {
+                        clearInterval(interval); // หยุดเมื่อพิมพ์เสร็จ
+                        setTimeout(() => {
+                            typeText(originalText); // กลับไปพิมพ์ข้อความปกติ
+                        }, 0); // รอ 0วินาทีก่อนกลับไปพิมพ์ข้อความปกติ
+                    }
+                }, typingSpeed);
+            }
+
+            // เริ่มต้นการพิมพ์
+            typeText(originalText);
+
+            $('#toggleMode').click(function() {
+                $('body').toggleClass('dark-mode'); // สลับคลาส dark-mode ใน body
+                $(this).text($(this).text() === '🌙' ? '☀️' : '🌙'); // สลับสัญลักษณ์
+            });
+
+            $('#generateBtn').click(function() {
+                const text = $('#inputText').val();
+                $('#qrcode').empty(); // ล้าง QR Code ที่มีอยู่ก่อนหน้านี้
+                if (text) {
+                    // สร้าง QR Code โดยใช้ qrcode.js
+                    const qrcode = new QRCode(document.getElementById("qrcode"), {
+                        text: text,
+                        width: 128,
+                        height: 128,
+                    });
+                    // แสดง SweetAlert ว่าสร้าง QR Code สำเร็จ
+                    swal("สำเร็จ!", "QR Code ถูกสร้างขึ้นแล้ว!", "success");
+                } else {
+                    // แสดง SweetAlert ถ้าไม่กรอกข้อความ
+                    swal("ข้อผิดพลาด!", "กรุณากรอกข้อความหรือ URL", "error");
+                }
+            });
+        });
+    </script>
+</body>
+</html>
